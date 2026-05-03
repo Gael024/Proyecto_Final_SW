@@ -9,6 +9,8 @@ import { UserRole } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './guards/roles.guard';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { request } from 'http';
 
 
 interface AuthenticatedRequest extends Request {
@@ -68,5 +70,16 @@ export class AuthController {
             data: user,
             message: 'Usuario obtenido correctamente',
         };
+    }
+
+    @Post('refresh-token')
+    refreshTokens(@Body() RefreshTokenDto: RefreshTokenDto){
+        return this.authService.refreshTokens(RefreshTokenDto);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('logout')
+    logout(@Req() request: AuthenticatedRequest){
+        return this.authService.logout(request.user.id);
     }
 }

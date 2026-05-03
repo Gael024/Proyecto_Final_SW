@@ -67,4 +67,35 @@ export class UsersService {
         },
       });
     }
+
+    async updateRefreshTokenHash(
+  userId: string,
+  refreshTokenHash: string,
+): Promise<void> {
+  await this.usersRepository.update(userId, {
+    refreshTokenHash,
+  });
+}
+
+async findByIdWithRefreshToken(id: string): Promise<User> {
+  const user = await this.usersRepository
+    .createQueryBuilder('user')
+    .addSelect('user.refreshTokenHash')
+    .where('user.id = :id', { id })
+    .getOne();
+
+  if (!user) {
+    throw new NotFoundException('Usuario no encontrado');
+  }
+
+  return user;
+}
+
+async clearRefreshToken(userId: string): Promise<void> {
+  await this.usersRepository.update(userId, {
+    refreshTokenHash: null,
+  });
+}
+
+
 }

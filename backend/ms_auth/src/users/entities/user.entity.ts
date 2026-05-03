@@ -32,6 +32,9 @@ export class User {
   @Column({ select: false })
   passwordHash: string;
 
+  @Column({ type: 'text', nullable: true, select:false })
+  refreshTokenHash?: string | null;
+
   @Column({ default: true })
   isActive: boolean;
 
