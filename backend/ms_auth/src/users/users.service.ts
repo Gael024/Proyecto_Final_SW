@@ -58,4 +58,13 @@ export class UsersService {
 
     return user;
   }
+
+//Prueba para control de acceso
+    async findAll():Promise<User[]> {
+      return this.usersRepository.find({
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+    }
 }
