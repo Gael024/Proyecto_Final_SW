@@ -1,4 +1,4 @@
-import {  BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {  BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
@@ -14,7 +14,6 @@ import { Repository } from 'typeorm';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { PasswordResetToken } from './entities/password-reset-token.entity';
-
 
 @Injectable()
 export class AuthService {
@@ -272,6 +271,82 @@ async resetPassword(resetPasswordDto: ResetPasswordDto) {
 
 private hashResetToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
+}
+
+async validateTokenForGrpc(token: string) {
+  try {
+    const payload = await this.jwtService.verifyAsync<{
+      sub: string;
+      email: string;
+      role: string;
+    }>(token, {
+      secret: this.configService.get<string>('JWT_SECRET') || 'default_secret',
+    });
+
+    const user = await this.usersService.findById(payload.sub);
+
+    if (!user || !user.isActive) {
+      return {
+        valid: false,
+        user: null,
+      };
+    }
+
+    return {
+      valid: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+      },
+    };
+  } catch {
+    return {
+      valid: false,
+      user: null,
+    };
+  }
+}
+
+async getUserByIdForGrpc(userId: string) {
+  try {
+    const user = await this.usersService.findById(userId);
+
+    return {
+      found: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        isActive: user.isActive,
+      },
+    };
+  } catch (error) {
+    if (error instanceof NotFoundException) {
+      return {
+        found: false,
+        user: null,
+      };
+    }
+
+    throw error;
+  }
+}
+
+async checkRoleForGrpc(userId: string, role: string) {
+  try {
+    const user = await this.usersService.findById(userId);
+
+    return {
+      hasRole: user.isActive && user.role === role,
+    };
+  } catch {
+    return {
+      hasRole: false,
+    };
+  }
 }
 
 

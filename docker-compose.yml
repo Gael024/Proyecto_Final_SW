@@ -12,5 +12,38 @@ services:
     volumes:
       - postgres_auth_data:/var/lib/postgresql/data
 
+  ms_auth:
+    build:
+      context: .
+      dockerfile: backend/ms_auth/Dockerfile
+    container_name: microservicio_auth
+    restart: always
+    environment:
+      NODE_ENV: development
+
+      REST_PORT: 3001
+      GRPC_PORT: 50051
+
+      DB_HOST: postgres_auth
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: ms_auth
+
+      JWT_SECRET: super_secret_cambialo_despues
+      JWT_EXPIRES_IN: 1h
+
+      JWT_REFRESH_SECRET: super_refresh_secret_cambialo_despues
+      JWT_REFRESH_EXPIRES_IN: 7d
+
+      PASSWORD_RESET_EXPIRES_MINUTES: 15
+
+      PROTO_AUTH_PATH: /app/proto/auth.proto
+    ports:
+      - "3001:3001"
+      - "50051:50051"
+    depends_on:
+      - postgres_auth    
+
 volumes:
   postgres_auth_data:

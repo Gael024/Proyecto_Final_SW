@@ -9,6 +9,8 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PasswordResetToken } from './entities/password-reset-token.entity';
+import { AuthGrpcController } from './grpc/auth-grpc.controller';
+
 
 @Module({
   imports: [
@@ -31,7 +33,7 @@ import { PasswordResetToken } from './entities/password-reset-token.entity';
       },
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, AuthGrpcController],
   providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })
