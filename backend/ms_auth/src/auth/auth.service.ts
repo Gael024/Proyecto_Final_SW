@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {  BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
@@ -8,6 +8,13 @@ import { User } from '../users/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import type { StringValue } from 'ms';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { createHash, randomBytes } from 'crypto';
+import { Repository } from 'typeorm';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { PasswordResetToken } from './entities/password-reset-token.entity';
+
 
 @Injectable()
 export class AuthService {
@@ -15,6 +22,9 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    @InjectRepository(PasswordResetToken)
+    private readonly passwordResetTokenRepository: Repository<PasswordResetToken>,
+
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -178,6 +188,90 @@ private async generateTokens(user: User) {
 private async saveRefreshToken(userId: string, refreshToken: string) {
   const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
   await this.usersService.updateRefreshTokenHash(userId, refreshTokenHash);
+}
+
+
+async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+  const user = await this.usersService.findByEmail(forgotPasswordDto.email);
+
+  if (!user) {
+    return {
+      success: true,
+      data: null,
+      message:
+        'Si el correo está registrado, recibirás instrucciones para restablecer tu contraseña',
+    };
+  }
+
+  const rawToken = randomBytes(32).toString('hex');
+  const tokenHash = this.hashResetToken(rawToken);
+
+  const expiresInMinutes =
+    this.configService.get<number>('PASSWORD_RESET_EXPIRES_MINUTES') || 15;
+
+  const expiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);
+
+  const resetToken = this.passwordResetTokenRepository.create({
+    userId: user.id,
+    tokenHash,
+    expiresAt,
+    usedAt: null,
+  });
+
+  await this.passwordResetTokenRepository.save(resetToken);
+
+  const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
+
+  return {
+    success: true,
+    data: isProduction
+      ? null
+      : {
+          resetToken: rawToken,
+          expiresAt,
+        },
+    message:
+      'Si el correo está registrado, recibirás instrucciones para restablecer tu contraseña',
+  };
+}
+
+async resetPassword(resetPasswordDto: ResetPasswordDto) {
+  const tokenHash = this.hashResetToken(resetPasswordDto.token);
+
+  const resetToken = await this.passwordResetTokenRepository.findOne({
+    where: {
+      tokenHash,
+    },
+  });
+
+  if (!resetToken) {
+    throw new BadRequestException('Token inválido');
+  }
+
+  if (resetToken.usedAt) {
+    throw new BadRequestException('El token ya fue utilizado');
+  }
+
+  if (resetToken.expiresAt < new Date()) {
+    throw new BadRequestException('El token ya expiró');
+  }
+
+  const passwordHash = await bcrypt.hash(resetPasswordDto.newPassword, 10);
+
+  await this.usersService.updatePassword(resetToken.userId, passwordHash);
+
+  resetToken.usedAt = new Date();
+  await this.passwordResetTokenRepository.save(resetToken);
+
+  return {
+    success: true,
+    data: null,
+    message: 'Contraseña restablecida correctamente',
+  };
+}
+
+private hashResetToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
 }
 
 

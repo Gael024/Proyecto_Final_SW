@@ -97,5 +97,12 @@ async clearRefreshToken(userId: string): Promise<void> {
   });
 }
 
+async updatePassword(userdId: string, passwordHash: string): Promise<void> {
+  await this.usersRepository.update(userdId, {
+    passwordHash,
+    refreshTokenHash: null,
+  });
+}
+
 
 }

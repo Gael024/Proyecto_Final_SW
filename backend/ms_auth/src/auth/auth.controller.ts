@@ -11,6 +11,8 @@ import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './guards/roles.guard';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { request } from 'http';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 
 interface AuthenticatedRequest extends Request {
@@ -81,5 +83,15 @@ export class AuthController {
     @Post('logout')
     logout(@Req() request: AuthenticatedRequest){
         return this.authService.logout(request.user.id);
+    }
+
+    @Post('forgot-password')
+    forgotPassword(@Body() ForgotPasswordDto: ForgotPasswordDto) {
+        return this.authService.forgotPassword(ForgotPasswordDto);
+    }
+
+    @Post('reset-password')
+    resetPassword(@Body() ResetPasswordDto: ResetPasswordDto) {
+        return this.authService.resetPassword(ResetPasswordDto);
     }
 }
