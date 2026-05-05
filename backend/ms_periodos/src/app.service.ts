@@ -5,6 +5,7 @@ import { Periodo } from './entities/periodo.entity';
 import { Materia } from './entities/materia.entity';
 import { MateriaPeriodoPlan } from './entities/materia-periodo-plan.entity';
 import { PlanEstudio } from './entities/plan-estudio.entity';
+import { Profesor } from './entities/profesor.entity';
 import { CreatePeriodoDto } from './dto/create-periodo.dto';
 import { UpdatePeriodoDto } from './dto/update-periodo.dto';
 
@@ -28,7 +29,18 @@ export class AppService {
     private readonly materiaPeriodoPlanRepository: Repository<MateriaPeriodoPlan>,
     @InjectRepository(PlanEstudio)
     private readonly planEstudioRepository: Repository<PlanEstudio>,
-  ) {}
+    @InjectRepository(Profesor)
+    private readonly profesorRepository: Repository<Profesor>,
+  ) { }
+
+  async getMaterias(periodoId: number): Promise<MateriaPeriodoPlan[]> {
+    return this.materiaPeriodoPlanRepository.find({
+      where: {
+        periodo: { id: periodoId },
+      },
+      relations: ['materia'],
+    });
+  }
 
   async createPeriodo(createPeriodoDto: CreatePeriodoDto): Promise<Periodo> {
     if (createPeriodoDto.activo) {
@@ -69,20 +81,29 @@ export class AppService {
     return activo;
   }
 
-  async getMateriaByPeriodo(materiaId: number): Promise<MateriaPeriodoPlan> {
+  async getPeriodoActivoConMaterias(): Promise<Periodo> {
+    const activo = await this.periodoRepository.findOne({
+      where: { activo: true },
+      relations: ['materiaPeriodoPlanes', 'materiaPeriodoPlanes.materia', 'materiaPeriodoPlanes.planEstudio', 'materiaPeriodoPlanes.profesor'],
+    });
+    if (!activo) throw new NotFoundException('No hay un periodo activo');
+    return activo;
+  }
+
+  async getMateriaById(nrc: string): Promise<MateriaPeriodoPlan> {
     const materia = await this.materiaPeriodoPlanRepository.findOne({
-      where: { id: materiaId },
-      relations: ['periodo', 'materia', 'planEstudio'],
+      where: { materia: { nrc: nrc } },
+      relations: ['periodo', 'materia', 'planEstudio', 'profesor'],
     });
     if (!materia) throw new NotFoundException('Materia no encontrada');
     return materia;
   }
 
-  async getMateriasByDocente(docenteId: string): Promise<Materia[]> {
+  async getMateriasByDocente(docenteId: number): Promise<Materia[]> {
     const periodoActivo = await this.getPeriodoActivo();
     const mpps = await this.materiaPeriodoPlanRepository.find({
       where: {
-        docenteId,
+        profesor: { id: docenteId },
         periodo: { id: periodoActivo.id },
       },
       relations: ['materia'],
@@ -127,7 +148,7 @@ export class AppService {
     let relacionesCreadas = 0;
 
     for (const row of materiaRows) {
-      // Crear o encontrar la Materia (por NRC)
+      // Buscar o crear la materia
       let materia = await this.materiaRepository.findOne({ where: { nrc: row.nrc } });
       if (!materia) {
         materia = this.materiaRepository.create({
@@ -136,6 +157,13 @@ export class AppService {
         });
         materia = await this.materiaRepository.save(materia);
         materiasCreadas++;
+      }
+
+      // Buscar o crear el Profesor
+      let profesor = await this.profesorRepository.findOne({ where: { nombre: row.profesor } });
+      if (!profesor && row.profesor) {
+        profesor = this.profesorRepository.create({ nombre: row.profesor });
+        profesor = await this.profesorRepository.save(profesor);
       }
 
       // Verificar que no exista ya la relación
@@ -152,6 +180,7 @@ export class AppService {
           materia,
           periodo,
           planEstudio,
+          profesor: profesor || undefined,
         });
         await this.materiaPeriodoPlanRepository.save(mpp);
         relacionesCreadas++;
@@ -187,12 +216,12 @@ export class AppService {
       if (nrcMatch) {
         const nrc = nrcMatch[1];
         const clave = nrcMatch[2];
-        
+
         // La materia + sección están pegados, necesitamos separarlos
         // Ejemplo: "Redes de ComputadorasOO1   L"
         // Extraemos solo hasta antes de la sección (OO1, 101, etc.)
         let materiaRaw = nrcMatch[3];
-        
+
         // Extraer profesor del grupo 5: "TREVINO - SANCHEZ DANIEL1CCO4/305"
         // El profesor termina donde empieza el salón (patrón: dígito + CCO o similar)
         const profSalonStr = nrcMatch[5];

@@ -1,8 +1,9 @@
 // src/entities/materia-periodo-plan.entity.ts
-import { Entity, ManyToOne, JoinColumn, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, ManyToOne, JoinColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { Materia } from './materia.entity';
 import { Periodo } from './periodo.entity';
 import { PlanEstudio } from './plan-estudio.entity';
+import { Profesor } from './profesor.entity';
 
 @Entity('materia_periodo_plan')
 export class MateriaPeriodoPlan {
@@ -21,6 +22,7 @@ export class MateriaPeriodoPlan {
   @JoinColumn({ name: 'plan_id' })
   planEstudio: PlanEstudio;
 
-  @Column({ nullable: true })
-  docenteId: string; // UUID del docente asignado
+  @ManyToOne(() => Profesor, (prof) => prof.materiaPeriodoPlanes, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'profesor_id' })
+  profesor: Profesor;
 }

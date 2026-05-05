@@ -8,6 +8,7 @@ import { Periodo } from './entities/periodo.entity';
 import { Materia } from './entities/materia.entity';
 import { PlanEstudio } from './entities/plan-estudio.entity';
 import { MateriaPeriodoPlan } from './entities/materia-periodo-plan.entity';
+import { Profesor } from './entities/profesor.entity';
 
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
@@ -37,11 +38,11 @@ import { join } from 'path';
         username: configService.get<string>('DB_USERNAME', 'postgres'),
         password: configService.get<string>('DB_PASSWORD', 'postgres'),
         database: configService.get<string>('DB_DATABASE', 'ms_periodos'),
-        entities: [Periodo, Materia, PlanEstudio, MateriaPeriodoPlan],
+        entities: [Periodo, Materia, PlanEstudio, MateriaPeriodoPlan, Profesor],
         synchronize: true, // Solo para desarrollo
       }),
     }),
-    TypeOrmModule.forFeature([Periodo, Materia, PlanEstudio, MateriaPeriodoPlan]),
+    TypeOrmModule.forFeature([Periodo, Materia, PlanEstudio, MateriaPeriodoPlan, Profesor]),
   ],
   controllers: [AppController, PeriodoGrpcController],
   providers: [AppService],

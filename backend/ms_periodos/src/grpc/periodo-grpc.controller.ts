@@ -11,9 +11,18 @@ export class PeriodoGrpcController {
   @GrpcMethod('PeriodosService', 'GetPeriodoActivo')
   async getPeriodoActivo() {
     try {
-      // Usamos el mismo método que ya tenías programado en app.service.ts
-      const periodo = await this.appService.getPeriodoActivo();
+      // Usamos el nuevo método que trae también las materias relacionadas
+      const periodo = await this.appService.getPeriodoActivoConMaterias();
       
+      // Mapeamos las materias al formato esperado por el .proto
+      const materiasFormateadas = periodo.materiaPeriodoPlanes ? periodo.materiaPeriodoPlanes.map(mpp => ({
+        id: mpp.id,
+        nrc: mpp.materia.nrc,
+        nombre: mpp.materia.nombre,
+        planEstudio: mpp.planEstudio.nombre,
+        docenteId: mpp.profesor ? mpp.profesor.id : 0,
+      })) : [];
+
       // Devolvemos la estructura exacta que pide el .proto (PeriodoResponse)
       return {
         id: periodo.id,
@@ -21,6 +30,7 @@ export class PeriodoGrpcController {
         fechaInicio: periodo.fecha_inicio.toISOString(),
         fechaFin: periodo.fecha_fin.toISOString(),
         activo: periodo.activo,
+        materias: materiasFormateadas,
       };
     } catch (error) {
       // Si no hay periodo activo, devolvemos datos vacíos o un error
@@ -30,6 +40,7 @@ export class PeriodoGrpcController {
         fechaInicio: '',
         fechaFin: '',
         activo: false,
+        materias: [],
       };
     }
   }

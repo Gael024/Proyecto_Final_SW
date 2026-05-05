@@ -12,15 +12,20 @@ import { AdminGuard } from './guards/admin.guard';
 export class AppController {
   constructor(private readonly appService: AppService) { }
 
-  // Obtiene la materia del periodo por id
+  // Obtiene todas las materias por el periodo dado (id)
+  @Get('/materias')
+  getMaterias(@Query('periodoId', ParseIntPipe) periodoId: number) {
+    return this.appService.getMaterias(periodoId);
+  }
+  // Obtiene la info de una materia  por id -
   @Get('/materias/detalle/:id')
-  getMateriaByPeriodo(@Param('id', ParseIntPipe) id: number) {
-    return this.appService.getMateriaByPeriodo(id);
+  getMateriaById(@Param('id') id: string) {
+    return this.appService.getMateriaById(id);
   }
 
-  // Obtiene las materias por docente en el periodo activo
+  // Obtiene las materias por docente 
   @Get('/materias/docente/:docenteId')
-  getMateriasByDocente(@Param('docenteId') docenteId: string) {
+  getMateriasByDocente(@Param('docenteId', ParseIntPipe) docenteId: number) {
     return this.appService.getMateriasByDocente(docenteId);
   }
 

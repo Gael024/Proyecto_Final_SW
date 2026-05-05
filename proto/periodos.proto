@@ -18,4 +18,13 @@ message PeriodoResponse {
   string fechaInicio = 3;
   string fechaFin = 4;
   bool activo = 5;
+  repeated MateriaResponse materias = 6;
+}
+
+message MateriaResponse {
+  int32 id = 1;
+  string nrc = 2;
+  string nombre = 3;
+  string planEstudio = 4;
+  int32 docenteId = 5;
 }
