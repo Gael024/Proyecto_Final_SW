@@ -76,6 +76,21 @@ services:
     depends_on:
       - postgres_periodos
 
+  
+  postgres_notificaciones:
+    image: postgres:16
+    container_name: contenedor_postgres_notificaciones
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ms_notificaciones
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_notificaciones_data:/var/lib/postgresql/data      
+
 volumes:
   postgres_auth_data:
   postgres_periodos_data:
+  postgres_notificaciones_data:
