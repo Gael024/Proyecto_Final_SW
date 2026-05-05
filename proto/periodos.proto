@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package periodos;
+
+// Este es el servicio que ms_periodos ofrecerá a los demás
+service PeriodosService {
+  // Un método para obtener la información del periodo actual
+  rpc GetPeriodoActivo (EmptyRequest) returns (PeriodoResponse);
+}
+
+// Un mensaje vacío porque no necesitamos enviarle datos para preguntar por el activo
+message EmptyRequest {}
+
+// La respuesta que devolverá ms_periodos
+message PeriodoResponse {
+  int32 id = 1;
+  string nombre = 2;
+  string fechaInicio = 3;
+  string fechaFin = 4;
+  bool activo = 5;
+}

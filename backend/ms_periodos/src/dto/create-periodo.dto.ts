@@ -9,8 +9,8 @@ export class CreatePeriodoDto {
   activo?: boolean;
 
   @IsDateString()
-  fechaInicio: string;
+  fecha_inicio: string;
 
   @IsDateString()
-  fechaFin: string;
+  fecha_fin: string;
 }

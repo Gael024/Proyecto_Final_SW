@@ -45,5 +45,37 @@ services:
     depends_on:
       - postgres_auth    
 
+  postgres_periodos:
+    image: postgres:16
+    container_name: contenedor_postgres_periodos
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ms_periodos
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_periodos_data:/var/lib/postgresql/data
+
+  ms_periodos:
+    build:
+      context: .
+      dockerfile: backend/ms_periodos/Dockerfile
+    container_name: microservicio_periodos
+    restart: always
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres_periodos
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: ms_periodos
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres_periodos
+
 volumes:
   postgres_auth_data:
+  postgres_periodos_data:
