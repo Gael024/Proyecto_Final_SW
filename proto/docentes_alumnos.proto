@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package docentes_alumnos;
+
+service Docentes_AlumnosService {
+    // ALUMNOS
+    rpc GetAlumnosByMateria (MateriaRequest) returns (AlumnosResponse);
+    rpc GetAlumnoById (AlumnoRequest) returns (AlumnoResponse);
+    rpc IsAlumnoEnMateria (AlumnoMateriaRequest) returns (BoolResponse);
+
+    // DOCENTES
+    rpc GetDocentes (Empty) returns (DocentesResponse);
+}
+
+message Empty {}
+
+message MateriaRequest {
+  int32 materiaId = 1;
+}
+
+message AlumnoRequest {
+  int32 alumnoId = 1;
+}
+
+message AlumnoMateriaRequest {
+  int32 alumnoId = 1;
+  int32 materiaId = 2;
+}
+
+message AlumnoResponse {
+  int32 matricula = 1;
+  string nombre = 2;
+  string correo = 3;
+}
+
+message AlumnosResponse {
+  repeated AlumnoResponse alumnos = 1;
+}
+
+// DOCENTES
+message DocenteResponse {
+  int32 id = 1;
+  string nombre = 2;
+  string correo = 3;
+}
+
+message DocentesResponse {
+  repeated DocenteResponse docentes = 1;
+}
+
+message BoolResponse {
+  bool result = 1;
+}
