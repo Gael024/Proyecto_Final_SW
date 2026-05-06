@@ -12,10 +12,10 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true.
+      whitelist: true,
       forbidNonWhitelisted: true,
-      transform: true.
-    });
+      transform: true,
+    }),
   );
 
   app.enableCors();
@@ -33,7 +33,7 @@ async function bootstrap() {
       package: 'notificaciones',
       protoPath,
       url: `0.0.0.0:${grpcPort}`,
-    };
+    },
   });
 
   await app.startAllMicroservices();

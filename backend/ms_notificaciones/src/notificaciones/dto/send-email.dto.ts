@@ -9,7 +9,7 @@ export class SendEmailDto {
     @IsNotEmpty()
     subject: string;
 
-    @isString()
+    @IsString()
     @IsNotEmpty()
     body: string;
 
