@@ -7,7 +7,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-//import { AlumnosGrpcController } from './grpc/docentes_alumnos.grpc.controller';
+import { DocentesAlumnosGrpcController } from './grpc/docentes_alumnos.grpc.controller';
 
 import { DocentesModule } from './docentes/docentes.module';
 import { AlumnosModule } from './alumnos/alumnos.module';
@@ -43,7 +43,7 @@ import { Docente} from './docentes/entities/docente.entity'
     DocentesModule,
     AlumnosModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController,DocentesAlumnosGrpcController],
   providers: [AppService],
 })
 export class AppModule {}

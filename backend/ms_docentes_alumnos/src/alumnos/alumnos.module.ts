@@ -13,6 +13,7 @@ import { MateriaAlumno } from './entities/materia-alumno.entity';
     TypeOrmModule.forFeature([Alumno, Materia, MateriaAlumno])
   ],
   controllers: [AlumnosController],
-  providers: [AlumnosService]
+  providers: [AlumnosService],
+  exports: [AlumnosService],
 })
 export class AlumnosModule {}
