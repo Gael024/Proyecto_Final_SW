@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
 //import { AppController } from './app.controller';
 //import { AppService } from './app.service';
-import { NotificacionesModule } from './notificaciones/notificaciones.module';
+
 
 @Module({
   imports: [
@@ -22,14 +22,13 @@ import { NotificacionesModule } from './notificaciones/notificaciones.module';
         database: ConfigService.get<string>('DB_DATABASE'),
         autoLoadEntities: true,
         synchronize: true,
-      });
+      }),
     }),
-    NotificacionesModule;
     NotificacionesModule,
   ],
 
 
   //controllers: [AppController],
   //providers: [AppService],
-});
+})
 export class AppModule {}

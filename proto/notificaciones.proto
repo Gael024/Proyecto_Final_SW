@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package notificaciones;
+
+service NotificacionesService {
+  rpc SendBienvenida (SendBienvenidaRequest) returns (SendNotificationResponse);
+  rpc SendBajaNotif (SendBajaNotifRequest) returns (SendNotificationResponse);
+  rpc SendCierreMateria (SendCierreMateriaRequest) returns (SendNotificationResponse);
+  rpc SendResetPassword (SendResetPasswordRequest) returns (SendNotificationResponse);
+}
+
+message SendBienvenidaRequest {
+  string to = 1;
+  string nombreAlumno = 2;
+  string claveAcceso = 3;
+}
+
+message SendBajaNotifRequest {
+  string to = 1;
+  string nombreDocente = 2;
+  string nombreAlumno = 3;
+  string nombreMateria = 4;
+}
+
+message SendCierreMateriaRequest {
+  repeated string destinatarios = 1;
+  string nombreMateria = 2;
+  string nombreDocente = 3;
+}
+
+message SendResetPasswordRequest {
+  string to = 1;
+  string nombreUsuario = 2;
+  string resetLink = 3;
+}
+
+message SendNotificationResponse {
+  bool sent = 1;
+  string message = 2;
+}
