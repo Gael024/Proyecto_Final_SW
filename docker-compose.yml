@@ -76,7 +76,39 @@ services:
     depends_on:
       - postgres_periodos
 
+  postgres_docentes_alumnos:
+    image: postgres:16
+    container_name: contenedor_postgres_docentes_alumnos
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ms_docentes_alumnos
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_periodos_data:/var/lib/postgresql/data
   
+  ms_docentes_alumnos:
+    build:
+      context: .
+      dockerfile: backend/ms_docentes_alumnos/Dockerfile
+    container_name: microservicio_docentes_alumnos
+    restart: always
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres_docentes_alumnos
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: ms_docentes_alumnos
+    ports:
+      - "3003:3003"
+      - "50053:50053"
+    depends_on:
+      - postgres_docentes_alumnos
+
+
   postgres_notificaciones:
     image: postgres:16
     container_name: contenedor_postgres_notificaciones

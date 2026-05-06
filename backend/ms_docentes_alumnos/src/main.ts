@@ -25,9 +25,7 @@ async function bootstrap() {
   const grpcPort = configService.get<number>('GRPC_PORT') || 50053;
 
   // 🔹 Ruta del proto (ajústala si es necesario)
-  const protoPath =
-    configService.get<string>('PROTO_MS3_PATH') ||
-    join(__dirname, '../../../proto/docentes_alumnos.proto')
+  const protoPath = '/app/proto/docentes_alumnos.proto';
 
   // 🔹 gRPC (TU microservicio)
   app.connectMicroservice<MicroserviceOptions>({

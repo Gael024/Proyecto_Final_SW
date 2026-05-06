@@ -8,6 +8,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DocentesAlumnosGrpcController } from './grpc/docentes_alumnos.grpc.controller';
+import { AuthClient } from './auth/auth.client';
 
 import { DocentesModule } from './docentes/docentes.module';
 import { AlumnosModule } from './alumnos/alumnos.module';
@@ -23,8 +24,16 @@ import { Docente} from './docentes/entities/docente.entity'
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-
-
+    ClientsModule.register([{
+    name: 'AUTH_SERVICE',
+    transport: Transport.GRPC,
+    options: {
+      package: 'auth',
+      protoPath: '/app/proto/auth.proto', 
+      //protoPath: '/app/proto/auth.proto',
+    },
+  },
+]),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -44,6 +53,7 @@ import { Docente} from './docentes/entities/docente.entity'
     AlumnosModule,
   ],
   controllers: [AppController,DocentesAlumnosGrpcController],
-  providers: [AppService],
+  providers: [AppService, AuthClient],
+  exports: [AuthClient]
 })
 export class AppModule {}
