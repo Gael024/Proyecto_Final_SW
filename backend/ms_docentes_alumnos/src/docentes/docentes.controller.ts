@@ -5,7 +5,10 @@ import {
   Body,
   Headers,
   UnauthorizedException,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 import { DocentesService } from './docentes.service';
 import { AuthClient } from '../auth/auth.client';
@@ -41,14 +44,15 @@ export class DocentesController {
   }
 
   // POST /docentes/importar
-  @Post('importar')
+ @Post('importar')
+  @UseInterceptors(FileInterceptor('archivo'))
   async importarDocentes(
-    @Body() data: any[],
+    @UploadedFile() file: Express.Multer.File,
     @Headers('authorization') auth: string,
   ) {
 
     await this.validate(auth);
 
-    return this.docentesService.importar(data);
+    return this.docentesService.importarPDF(file);
   }
 }

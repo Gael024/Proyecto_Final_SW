@@ -11,9 +11,9 @@ export class Docente {
   @Column({ unique: true })
   correo: string;
 
-  @Column({ nullable: true })
-  ubicacion: string;
+  @Column({ type: 'varchar', nullable: true })
+  ubicacion: string | null;
 
-  @Column({ nullable: true })
-  extension_: number;
+  @Column({ type: 'int', nullable: true })
+  extension_: number | null;
 }

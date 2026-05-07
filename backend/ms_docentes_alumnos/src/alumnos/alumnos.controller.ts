@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body,  UploadedFile, UseInterceptors,} from '@nestjs/common';
 import { UnauthorizedException } from '@nestjs/common';
 import { Headers } from '@nestjs/common';
 import { AuthClient } from '../auth/auth.client';
 import { AlumnosService } from './alumnos.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('alumnos')
 export class AlumnosController {
@@ -32,14 +33,20 @@ export class AlumnosController {
 
   // POST /alumnos/importar/:materiaId
   @Post('importar/:materiaId')
-  async importar(
-    @Param('materiaId') materiaId: string,
-    @Body() data: any[],
-    @Headers('authorization') auth: string,
-  ) {
-    await this.validate(auth);
-    return this.alumnosService.importar(materiaId, data);
-  }
+    @UseInterceptors(FileInterceptor('archivo'))
+    async importar(
+      @Param('materiaId') materiaId: string,
+      @UploadedFile() file: Express.Multer.File,
+      @Headers('authorization') auth: string,
+    ) {
+
+      await this.validate(auth);
+
+      return this.alumnosService.importarPDF(
+        materiaId,
+        file,
+      );
+    }
 
   // DELETE /alumnos/:id/baja/:materiaId
   @Delete(':id/baja/:materiaId')
