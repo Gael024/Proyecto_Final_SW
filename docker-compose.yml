@@ -72,7 +72,7 @@ services:
       DB_PASSWORD: postgres
       DB_DATABASE: ms_periodos
     ports:
-      - "3000:3000"
+      - "3002:3002"
     depends_on:
       - postgres_periodos
 
@@ -87,7 +87,7 @@ services:
     ports:
       - "5435:5432"
     volumes:
-      - postgres_periodos_data:/var/lib/postgresql/data
+    - postgres_docentes_alumnos_data:/var/lib/postgresql/data
   
   ms_docentes_alumnos:
     build:
@@ -126,3 +126,4 @@ volumes:
   postgres_auth_data:
   postgres_periodos_data:
   postgres_notificaciones_data:
+  postgres_docentes_alumnos_data:

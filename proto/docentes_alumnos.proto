@@ -10,6 +10,8 @@ service Docentes_AlumnosService {
 
     // DOCENTES
     rpc GetDocentes (Empty) returns (DocentesResponse);
+    rpc GetDocenteById (DocenteRequest) returns (DocenteResponse);
+
 }
 
 message Empty {}
@@ -25,6 +27,9 @@ message AlumnoRequest {
 message AlumnoMateriaRequest {
   int32 alumnoId = 1;
   int32 materiaId = 2;
+}
+message DocenteRequest {
+  int32 docenteId = 1;
 }
 
 message AlumnoResponse {

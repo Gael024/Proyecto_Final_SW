@@ -1,6 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Alumno } from './alumno.entity';
-import { Materia } from './materia.entity';
 
 @Entity('materias_alumnos')
 export class MateriaAlumno {
@@ -12,10 +11,9 @@ export class MateriaAlumno {
   @JoinColumn({ name: 'id_alumno' })
   alumno: Alumno;
 
-  @ManyToOne(() => Materia, materia => materia.alumnos)
-  @JoinColumn({ name: 'id_materia' })
-  materia: Materia;
+  @Column({ name: 'id_materia' })
+  materiaId: number;
 
-  @Column()
-  estado: string; // 'alta' | 'baja'
+  @Column({ type: 'boolean', default: true })
+  activo: boolean;
 }

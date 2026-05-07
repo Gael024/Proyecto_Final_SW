@@ -27,7 +27,7 @@ interface AuthServiceClient {
 export class AdminGuard implements CanActivate, OnModuleInit {
   private authService: AuthServiceClient;
 
-  constructor(@Inject('AUTH_PACKAGE') private client: any) {}
+  constructor(@Inject('AUTH_SERVICE') private client: any) {}
 
   onModuleInit() {
     this.authService = this.client.getService('AuthService') as AuthServiceClient;

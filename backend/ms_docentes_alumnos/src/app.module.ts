@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { join } from 'path';
 
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
@@ -14,10 +13,7 @@ import { DocentesModule } from './docentes/docentes.module';
 import { AlumnosModule } from './alumnos/alumnos.module';
 
 //entitys
-import { Alumno } from './alumnos/entities/alumno.entity';
-import { Materia } from './alumnos/entities/materia.entity';
-import { MateriaAlumno } from './alumnos/entities/materia-alumno.entity';
-import { Docente} from './docentes/entities/docente.entity'
+
 
 @Module({
   imports: [
@@ -35,25 +31,36 @@ import { Docente} from './docentes/entities/docente.entity'
   },
 ]),
     TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST', 'localhost'),
-        port: configService.get<number>('DB_PORT', 5432),
-        username: configService.get<string>('DB_USERNAME', 'postgres'),
-        password: configService.get<string>('DB_PASSWORD', 'Anime2905'),
-        database: configService.get<string>('DB_DATABASE', 'agm_ms3'),
-        entities: [Alumno, Materia, MateriaAlumno, Docente],
-        synchronize: false,
+  inject: [ConfigService],
+  useFactory: (configService: ConfigService) => ({
+    type: 'postgres',
+    host: configService.get<string>('DB_HOST'),
+    port: configService.get<number>('DB_PORT'),
+    username: configService.get<string>('DB_USERNAME'),
+    password: configService.get<string>('DB_PASSWORD'),
+    database: configService.get<string>('DB_DATABASE'),
+
+
+        autoLoadEntities: true,
+        synchronize: true,
+        logging: true,
       }),
     }),
 
-    TypeOrmModule.forFeature([Alumno, Materia, MateriaAlumno, Docente]),
     DocentesModule,
     AlumnosModule,
   ],
-  controllers: [AppController,DocentesAlumnosGrpcController],
-  providers: [AppService, AuthClient],
-  exports: [AuthClient]
+
+  controllers: [
+    AppController,
+    DocentesAlumnosGrpcController,
+  ],
+
+  providers: [
+    AppService,
+    AuthClient,
+  ],
+
+  exports: [AuthClient],
 })
 export class AppModule {}

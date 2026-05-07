@@ -44,4 +44,72 @@ export class PeriodoGrpcController {
       };
     }
   }
+  // GET MATERIA BY ID
+  @GrpcMethod('PeriodosService', 'GetMateriaById')
+  async getMateriaById(
+    data: { materiaId: string },
+  ) {
+
+    try {
+
+      const materia =
+        await this.appService.getMateriaById(
+          data.materiaId,
+        );
+
+      return {
+        id: materia.id,
+        nrc: materia.materia.nrc,
+        nombre: materia.materia.nombre,
+        planEstudio: materia.planEstudio.nombre,
+        docenteId: materia.profesor
+          ? materia.profesor.id
+          : 0,
+      };
+
+    } catch (error) {
+
+      return {
+        id: 0,
+        nrc: '',
+        nombre: 'Materia no encontrada',
+        planEstudio: '',
+        docenteId: 0,
+      };
+    }
+  }
+
+  // GET MATERIAS BY DOCENTE
+  @GrpcMethod(
+    'PeriodosService',
+    'GetMateriasByDocente',
+  )
+  async getMateriasByDocente(
+    data: { docenteId: number },
+  ) {
+
+    try {
+
+      const materias =
+        await this.appService.getMateriasByDocente(
+          data.docenteId,
+        );
+
+        return {
+        materias: materias.map((m) => ({
+          id: 0,
+          nrc: m.nrc,
+          nombre: m.nombre,
+          planEstudio: '',
+          docenteId: data.docenteId,
+        })),
+      };
+
+    } catch (error) {
+
+      return {
+        materias: [],
+      };
+    }
+  }
 }

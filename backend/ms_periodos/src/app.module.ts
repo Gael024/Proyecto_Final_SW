@@ -20,7 +20,7 @@ import { join } from 'path';
     }),
     ClientsModule.register([
       {
-        name: 'AUTH_PACKAGE',
+        name: 'AUTH_SERVICE',
         transport: Transport.GRPC,
         options: {
           package: 'auth',

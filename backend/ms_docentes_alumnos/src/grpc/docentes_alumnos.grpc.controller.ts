@@ -65,25 +65,30 @@ export class DocentesAlumnosGrpcController {
   }
 
   @GrpcMethod('Docentes_AlumnosService', 'IsAlumnoEnMateria')
-  async isAlumnoEnMateria(data: { alumnoId: number; materiaId: number }) {
-    try {
-      const relacion = await this.alumnosService['materiaAlumnoRepo'].findOne({
+async isAlumnoEnMateria(data: { alumnoId: number; materiaId: number }) {
+
+  try {
+
+    const relacion =
+      await this.alumnosService['materiaAlumnoRepo'].findOne({
         where: {
           alumno: { matricula: data.alumnoId },
-          materia: { id: data.materiaId },
-          estado: 'alta',
+          materiaId: data.materiaId,
+          activo: true,
         },
       });
 
-      return {
-        result: !!relacion,
-      };
-    } catch (error) {
-      return {
-        result: false,
-      };
-    }
+    return {
+      result: !!relacion,
+    };
+
+  } catch (error) {
+
+    return {
+      result: false,
+    };
   }
+}
 
   //DOCENTES
 
@@ -104,6 +109,34 @@ export class DocentesAlumnosGrpcController {
     } catch (error) {
       return {
         docentes: [],
+      };
+    }
+  }
+@GrpcMethod('Docentes_AlumnosService', 'GetDocenteById')
+  async getDocenteById(data: { docenteId: number }) {
+    try {
+      const docente = await this.docentesService['docenteRepo'].findOneBy({
+        id: data.docenteId,
+      });
+
+      if (!docente) {
+        return {
+          id: 0,
+          nombre: '',
+          correo: '',
+        };
+      }
+
+      return {
+        id: docente.id,
+        nombre: docente.nombre,
+        correo: docente.correo,
+      };
+    } catch (error) {
+      return {
+        id: 0,
+        nombre: '',
+        correo: '',
       };
     }
   }
