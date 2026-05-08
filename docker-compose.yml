@@ -120,7 +120,56 @@ services:
     ports:
       - "5436:5432"
     volumes:
-      - postgres_notificaciones_data:/var/lib/postgresql/data      
+      - postgres_notificaciones_data:/var/lib/postgresql/data   
+      
+  ms_notificaciones:
+    build:
+      context: .
+      dockerfile: backend/ms_notificaciones/Dockerfile
+    container_name: microservicio_notificaciones
+    restart: always
+    environment:
+      NODE_ENV: development
+
+      REST_PORT: 3006
+      GRPC_PORT: 50056
+
+      DB_HOST: postgres_notificaciones
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: ms_notificaciones
+
+      SMTP_HOST: smtp.mailtrap.io
+      SMTP_PORT: 2525
+      SMTP_USER: change_me
+      SMTP_PASS: change_me
+      SMTP_FROM: "AGM System <no-reply@agm.com>"
+
+      PROTO_NOTIFICACIONES_PATH: /app/proto/notificaciones.proto
+    ports:
+      - "3006:3006"
+      - "50056:50056"
+    depends_on:
+      - postgres_notificaciones       
+
+
+  api_gateway:
+    build:
+      context: .
+      dockerfile: backend/api_gateway/Dockerfile
+    container_name: microservicio_api_gateway
+    restart: always
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      MS_AUTH_URL: http://ms_auth:3001
+      MS_NOTIFICACIONES_URL: http://ms_notificaciones:3006
+    ports:
+      - "3000:3000"
+    depends_on:
+      - ms_auth
+      - ms_notificaciones    
 
 volumes:
   postgres_auth_data:
