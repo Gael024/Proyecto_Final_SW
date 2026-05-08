@@ -16,7 +16,7 @@ export class Periodo {
   @Column({ type: 'date' })
   fecha_fin: Date;
 
-  @Column({ default: false }) // Mantenemos esto para tu lógica de "activo"
+  @Column({ default: false })
   activo: boolean;
 
   @OneToMany(() => MateriaPeriodoPlan, (mpp) => mpp.periodo)
