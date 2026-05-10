@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as nodemailer from 'nodemailer';
@@ -11,8 +11,9 @@ import { SendEmailDto } from './dto/send-email.dto';
 import { EmailLog, EmailStatus, EmailType } from './entities/email-log.entity';
 
 @Injectable()
-export class NotificacionesService {
+export class NotificacionesService implements OnModuleInit {
   private transporter: nodemailer.Transporter;
+  private readonly logger = new Logger(NotificacionesService.name);
 
   constructor(
     private readonly configService: ConfigService,
@@ -20,16 +21,33 @@ export class NotificacionesService {
     @InjectRepository(EmailLog)
     private readonly emailLogRepository: Repository<EmailLog>,
   ) {
+    const smtpSecure =
+      this.configService.get<string>('SMTP_SECURE') === 'true';
+
     this.transporter = nodemailer.createTransport({
       host: this.configService.get<string>('SMTP_HOST'),
       port: this.configService.get<number>('SMTP_PORT') || 2525,
-      secure: false,
+      secure: smtpSecure,
       auth: {
         user: this.configService.get<string>('SMTP_USER'),
         pass: this.configService.get<string>('SMTP_PASS'),
       },
     });
   }
+
+  
+  async onModuleInit() {
+    //console.log('Entrando a onModuleInit de NotificacionesService');
+  try {
+    await this.transporter.verify();
+    this.logger.log('SMTP configurado correctamente');
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Error desconocido';
+
+    this.logger.warn(`No se pudo verificar SMTP: ${errorMessage}`);
+  }
+}
 
   async sendEmail(sendEmailDto: SendEmailDto) {
     try {
@@ -201,4 +219,6 @@ Ya puedes consultar tu calificación en el sistema.
       </div>
     `;
   }
+
+  
 }
