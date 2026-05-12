@@ -107,6 +107,38 @@ services:
       - "50053:50053"
     depends_on:
       - postgres_docentes_alumnos
+  
+  postgres_calificaciones:
+    image: postgres:16
+    container_name: contenedor_postgres_calificaciones
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ms_calificaciones
+    ports:
+      - "5436:5432"
+    volumes:
+    - postgres_calificaciones_data:/var/lib/postgresql/data
+  
+  ms_calificaciones:
+    build:
+      context: .
+      dockerfile: backend/ms_calificaciones/Dockerfile
+    container_name: microservicio_calificaciones
+    restart: always
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres_calificaciones
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: ms_calificaciones
+    ports:
+      - "3004:3004"
+      - "50054:50054"
+    depends_on:
+      - postgres_calificaciones
 
 
   postgres_notificaciones:
@@ -118,7 +150,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: ms_notificaciones
     ports:
-      - "5434:5432"
+      - "5438:5432"
     volumes:
       - postgres_notificaciones_data:/var/lib/postgresql/data   
       
@@ -176,3 +208,4 @@ volumes:
   postgres_periodos_data:
   postgres_notificaciones_data:
   postgres_docentes_alumnos_data:
+  postgres_calificaciones_data:
