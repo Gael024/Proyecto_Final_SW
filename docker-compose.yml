@@ -54,7 +54,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: ms_periodos
     ports:
-      - "5434:5432"
+      - "5438:5432"
     volumes:
       - postgres_periodos_data:/var/lib/postgresql/data
 
@@ -150,7 +150,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: ms_notificaciones
     ports:
-      - "5438:5432"
+      - "5434:5432"
     volumes:
       - postgres_notificaciones_data:/var/lib/postgresql/data   
       
