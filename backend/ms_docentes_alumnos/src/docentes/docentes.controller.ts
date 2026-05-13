@@ -11,7 +11,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 
 import { DocentesService } from './docentes.service';
-import { AuthClient } from '../auth/auth.client';
+import { AuthClient } from '../grpc_clients/auth/auth.client';
 
 @Controller('docentes')
 export class DocentesController {

@@ -6,7 +6,7 @@ import { DocentesController } from './docentes.controller';
 import { DocentesService } from './docentes.service';
 import { Docente } from './entities/docente.entity';
 
-import { AuthClient } from '../auth/auth.client';
+import { AuthClient } from '../grpc_clients/auth/auth.client';
 @Module({
   imports: [
     ClientsModule.register([

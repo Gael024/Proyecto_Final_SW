@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Delete, Param, Body,  UploadedFile, UseInterceptors,} from '@nestjs/common';
 import { UnauthorizedException } from '@nestjs/common';
 import { Headers } from '@nestjs/common';
-import { AuthClient } from '../auth/auth.client';
+import { AuthClient } from '../grpc_clients/auth/auth.client';
 import { AlumnosService } from './alumnos.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 

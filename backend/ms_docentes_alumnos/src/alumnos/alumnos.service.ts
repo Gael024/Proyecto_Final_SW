@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { PeriodosClient } from '../grpc_clients/periodos/periodos.client';
 
 import { Alumno } from './entities/alumno.entity';
 import { MateriaAlumno } from './entities/materia-alumno.entity';
@@ -26,10 +27,41 @@ export class AlumnosService {
 
     @InjectRepository(MateriaAlumno)
     private readonly materiaAlumnoRepo: Repository<MateriaAlumno>,
+
+    private readonly periodosClient: PeriodosClient,
   ) {}
 
+  //Validacion de materia existentes
+  private async validarMateria(materiaId: string,) {
+    const materia =
+      await this.periodosClient.getMateriaById(
+        materiaId,
+      );
+    if (!materia || materia.id === 0) {
+      throw new NotFoundException(
+        'La materia no existe',
+      );
+    }
+    return materia;
+  }
+  //Validar Alumno
+  private async validarAlumno(matricula: string,) {
+    const alumno =
+      await this.alumnoRepo.findOneBy({
+        matricula: Number(matricula),
+      });
+
+    if (!alumno) {
+      throw new NotFoundException(
+        'La matrícula no existe',
+      );
+    }
+
+    return alumno;
+  }
   // GET alumnos por materia
   async getPorMateria(materiaId: string) {
+    await this.validarMateria(materiaId);
 
     const relaciones = await this.materiaAlumnoRepo.find({
       where: {
@@ -150,11 +182,8 @@ export class AlumnosService {
 
     return alumnos;
   }
-  async importar(
-    materiaId: string,
-    data: AlumnoRow[],
-  ) {
-
+  async importar(materiaId: string, data: AlumnoRow[],) {
+    await this.validarMateria(materiaId);
     for (const item of data) {
 
       let alumno =
@@ -206,6 +235,8 @@ export class AlumnosService {
 
   // BAJA alumno
   async baja(id: string, materiaId: string) {
+    await this.validarMateria(materiaId);
+    await this.validarAlumno(id);
 
     const relacion = await this.materiaAlumnoRepo.findOne({
       where: {
