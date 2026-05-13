@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package calificaciones;
+
+service CalificacionesService {
+
+  rpc RegistrarCalificacion (RegistrarCalificacionRequest)
+      returns (CalificacionResponse);
+
+  rpc ObtenerCalificacionesAlumno (AlumnoRequest)
+      returns (CalificacionesResponse);
+
+  rpc ObtenerCalificacionesMateria (MateriaRequest)
+      returns (CalificacionesResponse);
+
+  rpc ObtenerPromedioAlumno (AlumnoRequest)
+      returns (PromedioResponse);
+}
+
+message RegistrarCalificacionRequest {
+  int32 alumnoId = 1;
+  int32 materiaId = 2;
+  int32 docenteId = 3;
+  int32 parcial = 4;
+  float calificacion = 5;
+}
+
+message AlumnoRequest {
+  int32 alumnoId = 1;
+}
+
+message MateriaRequest {
+  int32 materiaId = 1;
+}
+
+message CalificacionResponse {
+  int32 id = 1;
+  int32 alumnoId = 2;
+  int32 materiaId = 3;
+  int32 docenteId = 4;
+  int32 parcial = 5;
+  float calificacion = 6;
+  int32 periodoId = 7;
+  string fechaRegistro = 8;
+}
+
+message CalificacionesResponse {
+  repeated CalificacionResponse calificaciones = 1;
+}
+
+message PromedioResponse {
+  int32 alumnoId = 1;
+  float promedio = 2;
+}
