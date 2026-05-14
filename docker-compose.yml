@@ -39,11 +39,16 @@ services:
       PASSWORD_RESET_EXPIRES_MINUTES: 15
 
       PROTO_AUTH_PATH: /app/proto/auth.proto
+
+      NOTIFICACIONES_GRPC_URL: ms_notificaciones:50056
+      PROTO_NOTIFICACIONES_PATH: /app/proto/notificaciones.proto
+      RESET_PASSWORD_BASE_URL: http://localhost:4200/reset-password
     ports:
       - "3001:3001"
       - "50051:50051"
     depends_on:
-      - postgres_auth    
+      - postgres_auth
+      - ms_notificaciones    
 
   postgres_periodos:
     image: postgres:16
