@@ -177,11 +177,18 @@ services:
       DB_PASSWORD: postgres
       DB_DATABASE: ms_notificaciones
 
-      SMTP_HOST: smtp.mailtrap.io
-      SMTP_PORT: 2525
-      SMTP_USER: change_me
-      SMTP_PASS: change_me
-      SMTP_FROM: "AGM System <no-reply@agm.com>"
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 465
+      SMTP_SECURE: "true"
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
+
+      EMAIL_DRY_RUN: "false"
+      EMAIL_REAL_SEND_ENABLED: "true"
+      EMAIL_MAX_RECIPIENTS_PER_REQUEST: 3
+      EMAIL_ALLOWLIST_ENABLED: "true"
+      EMAIL_ALLOWLIST: ${EMAIL_ALLOWLIST}
 
       PROTO_NOTIFICACIONES_PATH: /app/proto/notificaciones.proto
     ports:
