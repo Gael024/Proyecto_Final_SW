@@ -49,8 +49,58 @@ export class NotificacionesService implements OnModuleInit {
   }
 }
 
+  
+
+  private validateRealEmailSending(to: string) {
+  const realSendEnabled =
+    this.configService.get<string>('EMAIL_REAL_SEND_ENABLED') === 'true';
+
+  if (!realSendEnabled) {
+    throw new Error('El envío real de correos está deshabilitado');
+  }
+
+  const allowlistEnabled =
+    this.configService.get<string>('EMAIL_ALLOWLIST_ENABLED') === 'true';
+
+  if (!allowlistEnabled) {
+    return;
+  }
+
+  const allowlistRaw =
+    this.configService.get<string>('EMAIL_ALLOWLIST') || '';
+
+  const allowlist = allowlistRaw
+    .split(',')
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+
+  const recipient = to.trim().toLowerCase();
+
+  if (!allowlist.includes(recipient)) {
+    throw new Error(`El correo ${to} no está permitido para pruebas reales`);
+  }
+}
+  
+
   async sendEmail(sendEmailDto: SendEmailDto) {
     try {
+      const dryRun = this.configService.get<string>('EMAIL_DRY_RUN') === 'true';
+      if(dryRun){
+        await this.saveLog({
+          ...sendEmailDto,
+          status: EmailStatus.SENT,
+          errorMessage: 'DRY_RUN: correo simulado, no enviado realmente',
+        });
+        return {
+          success: true,
+          data: {
+            sent: false,
+            dryRun: true,
+          },
+          message: 'Correo simulado correctamente',
+        };
+      }
+      this.validateRealEmailSending(sendEmailDto.to);
       await this.transporter.sendMail({
         from:
           this.configService.get<string>('SMTP_FROM') ||
@@ -146,6 +196,19 @@ Este mensaje fue generado automáticamente por AGM.
   }
 
   async sendCierreMateria(dto: CierreMateriaDto) {
+    const maxRecipients =
+      this.configService.get<number>('EMAIL_MAX_RECIPIENTS_PER_REQUEST') || 3;
+  if(dto.destinatarios.length > maxRecipients){
+        return{
+          success: false,
+          data: {
+            sent: false,
+            totalRecipients: dto.destinatarios.length,
+            maxRecipients,
+          },
+          message: `No se pueden enviar más de ${maxRecipients} correos por solicitud`,
+        };
+      }
     const results: Array<{
       to: string;
       result: {
