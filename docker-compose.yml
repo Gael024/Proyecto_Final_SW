@@ -171,8 +171,58 @@ services:
       - ms_auth
       - ms_notificaciones    
 
+  redis:
+    image: redis:7
+
+    container_name: redis_asistencias
+    
+    ports:
+      - "6379:6379"
+
+  postgres_asistencias:
+    image: postgres:16
+    container_name:
+      contenedor_postgres_asistencias
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ms_asistencias
+    ports:
+      - "5437:5432"
+    volumes:
+      - postgres_asistencias_data:/var/lib/postgresql/data
+
+  ms_asistencias:
+    build:
+      context: .
+      dockerfile:
+        backend/ms_asistencias/Dockerfile
+    container_name:
+      microservicio_asistencias
+    restart: always
+    environment:
+      NODE_ENV: development
+      PORT: 3005
+      DB_HOST: postgres_asistencias
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: ms_asistencias
+      JWT_SECRET: super_secret_qr_key
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      GRPC_PORT: 50055
+    ports:
+      - "3005:3005"
+      - "50055:50055"
+    depends_on:
+      - postgres_asistencias
+      - redis
+
 volumes:
   postgres_auth_data:
   postgres_periodos_data:
   postgres_notificaciones_data:
   postgres_docentes_alumnos_data:
+  postgres_asistencias_data:
