@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as nodemailer from 'nodemailer';
@@ -11,8 +11,9 @@ import { SendEmailDto } from './dto/send-email.dto';
 import { EmailLog, EmailStatus, EmailType } from './entities/email-log.entity';
 
 @Injectable()
-export class NotificacionesService {
+export class NotificacionesService implements OnModuleInit {
   private transporter: nodemailer.Transporter;
+  private readonly logger = new Logger(NotificacionesService.name);
 
   constructor(
     private readonly configService: ConfigService,
@@ -20,10 +21,13 @@ export class NotificacionesService {
     @InjectRepository(EmailLog)
     private readonly emailLogRepository: Repository<EmailLog>,
   ) {
+    const smtpSecure =
+      this.configService.get<string>('SMTP_SECURE') === 'true';
+
     this.transporter = nodemailer.createTransport({
       host: this.configService.get<string>('SMTP_HOST'),
       port: this.configService.get<number>('SMTP_PORT') || 2525,
-      secure: false,
+      secure: smtpSecure,
       auth: {
         user: this.configService.get<string>('SMTP_USER'),
         pass: this.configService.get<string>('SMTP_PASS'),
@@ -31,8 +35,72 @@ export class NotificacionesService {
     });
   }
 
+  
+  async onModuleInit() {
+    //console.log('Entrando a onModuleInit de NotificacionesService');
+  try {
+    await this.transporter.verify();
+    this.logger.log('SMTP configurado correctamente');
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Error desconocido';
+
+    this.logger.warn(`No se pudo verificar SMTP: ${errorMessage}`);
+  }
+}
+
+  
+
+  private validateRealEmailSending(to: string) {
+  const realSendEnabled =
+    this.configService.get<string>('EMAIL_REAL_SEND_ENABLED') === 'true';
+
+  if (!realSendEnabled) {
+    throw new Error('El envío real de correos está deshabilitado');
+  }
+
+  const allowlistEnabled =
+    this.configService.get<string>('EMAIL_ALLOWLIST_ENABLED') === 'true';
+
+  if (!allowlistEnabled) {
+    return;
+  }
+
+  const allowlistRaw =
+    this.configService.get<string>('EMAIL_ALLOWLIST') || '';
+
+  const allowlist = allowlistRaw
+    .split(',')
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+
+  const recipient = to.trim().toLowerCase();
+
+  if (!allowlist.includes(recipient)) {
+    throw new Error(`El correo ${to} no está permitido para pruebas reales`);
+  }
+}
+  
+
   async sendEmail(sendEmailDto: SendEmailDto) {
     try {
+      const dryRun = this.configService.get<string>('EMAIL_DRY_RUN') === 'true';
+      if(dryRun){
+        await this.saveLog({
+          ...sendEmailDto,
+          status: EmailStatus.SENT,
+          errorMessage: 'DRY_RUN: correo simulado, no enviado realmente',
+        });
+        return {
+          success: true,
+          data: {
+            sent: false,
+            dryRun: true,
+          },
+          message: 'Correo simulado correctamente',
+        };
+      }
+      this.validateRealEmailSending(sendEmailDto.to);
       await this.transporter.sendMail({
         from:
           this.configService.get<string>('SMTP_FROM') ||
@@ -128,6 +196,19 @@ Este mensaje fue generado automáticamente por AGM.
   }
 
   async sendCierreMateria(dto: CierreMateriaDto) {
+    const maxRecipients =
+      this.configService.get<number>('EMAIL_MAX_RECIPIENTS_PER_REQUEST') || 3;
+  if(dto.destinatarios.length > maxRecipients){
+        return{
+          success: false,
+          data: {
+            sent: false,
+            totalRecipients: dto.destinatarios.length,
+            maxRecipients,
+          },
+          message: `No se pueden enviar más de ${maxRecipients} correos por solicitud`,
+        };
+      }
     const results: Array<{
       to: string;
       result: {
@@ -201,4 +282,6 @@ Ya puedes consultar tu calificación en el sistema.
       </div>
     `;
   }
+
+  
 }

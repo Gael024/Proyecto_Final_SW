@@ -10,6 +10,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PasswordResetToken } from './entities/password-reset-token.entity';
 import { AuthGrpcController } from './grpc/auth-grpc.controller';
+import { NotificacionesClientModule } from 'src/notificaciones-client/notificaciones-client.module';
 
 
 @Module({
@@ -17,6 +18,7 @@ import { AuthGrpcController } from './grpc/auth-grpc.controller';
     UsersModule,
     PassportModule,
     TypeOrmModule.forFeature([PasswordResetToken]),
+    NotificacionesClientModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {

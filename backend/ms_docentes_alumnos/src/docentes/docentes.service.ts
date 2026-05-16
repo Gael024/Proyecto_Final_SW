@@ -107,7 +107,7 @@ async importarPDF(file: Express.Multer.File) {
         correo: item.correo,
       });
       if (existe) {
-        resultados.push({ ...item, status: 'duplicado' });
+        resultados.push({ ...item, status: 'ya registrado' });
         continue;
       }
       const docente = this.docenteRepo.create({

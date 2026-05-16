@@ -8,7 +8,8 @@ import { AlumnosService } from './alumnos.service';
 import { Alumno } from './entities/alumno.entity';
 import { MateriaAlumno } from './entities/materia-alumno.entity';
 
-import { AuthClient } from '../auth/auth.client';
+import { AuthClient } from '../grpc_clients/auth/auth.client';
+import { PeriodosModule } from '../grpc_clients/periodos/periodos.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AuthClient } from '../auth/auth.client';
         },
       },
     ]),
+    PeriodosModule,
   ],
 
   controllers: [AlumnosController],

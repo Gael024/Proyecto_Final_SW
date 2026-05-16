@@ -14,6 +14,8 @@ import { Repository } from 'typeorm';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { PasswordResetToken } from './entities/password-reset-token.entity';
+import { NotificacionesClientService } from 'src/notificaciones-client/notificaciones-client.service';
+
 
 @Injectable()
 export class AuthService {
@@ -21,6 +23,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly notificacionesClientService: NotificacionesClientService,
     @InjectRepository(PasswordResetToken)
     private readonly passwordResetTokenRepository: Repository<PasswordResetToken>,
 
@@ -219,6 +222,19 @@ async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
 
   await this.passwordResetTokenRepository.save(resetToken);
 
+  const resetPasswordBaseUrl = 
+    this.configService.get<string>('RESET_PASSWORD_BASE_URL') ||
+    'http://localhost:4200/reset-password';
+
+  const resetLink = `${resetPasswordBaseUrl}?token=${rawToken}`;
+  
+  const notificationResult = 
+    await this.notificacionesClientService.sendResetPassword({
+      to: user.email,
+      nombreUsuario: user.fullName,
+      resetLink,
+    });
+
   const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
 
   return {
@@ -227,6 +243,9 @@ async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
       ? null
       : {
           resetToken: rawToken,
+          resetLink,
+          notificationSent: notificationResult.sent,
+          notificationMessage: notificationResult.message,
           expiresAt,
         },
     message:
