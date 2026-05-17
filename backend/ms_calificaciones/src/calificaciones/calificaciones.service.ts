@@ -477,4 +477,101 @@ export class CalificacionesService implements OnModuleInit {  // ← implements 
       message: 'Concentrado obtenido correctamente',
     };
   }
+  //Metodos GRPC
+  //GetPromedioAlumno
+  async getPromedioAlumno(alumnoId: number, materiaId: number) {
+    const calificaciones = await this.calificacionRepo.find({
+      where: { alumnoId, materiaId },
+      relations: ['actividad'],
+    });
+    if (!calificaciones.length) {
+      return { success: false, promedio: 0, message: 'No hay calificaciones para este alumno' };
+    }
+    const ponderaciones = await this.ponderacionRepo.find({ where: { materiaId } });
+    const ponderacionMap = new Map(
+      ponderaciones.map((p) => [this.normalize(p.categoria), p.porcentaje]),
+    );
+    // Misma lógica que getConcentrado pero para un solo alumno
+    const categorias: Record<string, { suma: number; cantidad: number; ponderacion: number }> = {};
+    calificaciones.forEach(({ actividad, calificacion }) => {
+      const cat = this.normalize(actividad.categoria);
+      if (!categorias[cat]) {
+        categorias[cat] = { suma: 0, cantidad: 0, ponderacion: ponderacionMap.get(cat) || 0 };
+      }
+      categorias[cat].suma += Number(calificacion);
+      categorias[cat].cantidad += 1;
+    });
+    let promedio = 0;
+    Object.values(categorias).forEach(({ suma, cantidad, ponderacion }) => {
+      promedio += (cantidad > 0 ? suma / cantidad : 0) * (ponderacion / 100);
+    });
+    return {
+      success: true,
+      promedio: Number(promedio.toFixed(2)),
+      message: 'Promedio obtenido correctamente',
+    };
+  }
+  //GetEstadisticasMateria
+  async getEstadisticasMateria(materiaId: number) {
+  const calificaciones = await this.calificacionRepo.find({
+    where: { materiaId },
+    relations: ['actividad'],
+  });
+
+  if (!calificaciones.length) {
+    return {
+      success: false,
+      promedioGeneral: 0,
+      totalAlumnos: 0,
+      totalActividades: 0,
+      calificacionMax: 0,
+      calificacionMin: 0,
+      porCategoria: [],
+      message: 'No hay calificaciones registradas',
+    };
+  }
+
+  // Alumnos y actividades únicos
+  const alumnosUnicos     = new Set(calificaciones.map((c) => c.alumnoId));
+  const actividadesUnicas = new Set(calificaciones.map((c) => c.actividadId));
+
+  const valores = calificaciones.map((c) => Number(c.calificacion));
+  const calificacionMax = Math.max(...valores);
+  const calificacionMin = Math.min(...valores);
+
+  // Estadísticas por categoría
+  const catMap: Record<string, { suma: number; valores: number[]; alumnos: Set<number> }> = {};
+
+  calificaciones.forEach(({ actividad, calificacion, alumnoId }) => {
+    const cat = this.normalize(actividad.categoria);
+    if (!catMap[cat]) catMap[cat] = { suma: 0, valores: [], alumnos: new Set() };
+    catMap[cat].suma += Number(calificacion);
+    catMap[cat].valores.push(Number(calificacion));
+    catMap[cat].alumnos.add(alumnoId);
+  });
+
+  const porCategoria = Object.entries(catMap).map(([categoria, data]) => ({
+    categoria,
+    promedio:        Number((data.suma / data.valores.length).toFixed(2)),
+    calificacionMax: Math.max(...data.valores),
+    calificacionMin: Math.min(...data.valores),
+    totalAlumnos:    data.alumnos.size,
+  }));
+
+  const promedioGeneral = Number(
+    (valores.reduce((a, b) => a + b, 0) / valores.length).toFixed(2),
+  );
+
+  return {
+    success: true,
+    promedioGeneral,
+    totalAlumnos:     alumnosUnicos.size,
+    totalActividades: actividadesUnicas.size,
+    calificacionMax,
+    calificacionMin,
+    porCategoria,
+    message: 'Estadísticas obtenidas correctamente',
+  };
+}
+
 }

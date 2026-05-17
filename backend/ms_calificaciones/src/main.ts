@@ -21,6 +21,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  
   app.enableCors();
   // PUERTOS
   const restPort =
@@ -34,12 +35,9 @@ async function bootstrap() {
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
-
     options: {
-      package: 'calificaciones',
-
+      package: 'calificaciones', 
       protoPath,
-
       url: `0.0.0.0:${grpcPort}`,
     },
   });

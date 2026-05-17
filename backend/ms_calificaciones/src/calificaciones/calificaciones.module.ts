@@ -6,7 +6,8 @@ import { CalificacionesController } from './calificaciones.controller';
 import { CalificacionesService } from './calificaciones.service';
 import { Actividad } from './entities/actividad.entity';
 import { Calificacion } from './entities/calificacion.entity';
-import { Ponderacion } from './entities/ponderacion.entity';
+import { Ponderacion } from './entities/ponderacion.entity';     // HTTP
+import { CalificacionesGrpcController } from './grpc/calificaciones.grpc.controller';
 
 @Module({
    imports: [
@@ -27,7 +28,7 @@ import { Ponderacion } from './entities/ponderacion.entity';
       Ponderacion,
     ]),
   ],
-  controllers: [CalificacionesController],
+  controllers: [CalificacionesController, CalificacionesGrpcController],
   providers: [CalificacionesService]
 })
 export class CalificacionesModule {}
