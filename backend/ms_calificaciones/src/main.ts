@@ -9,7 +9,6 @@ import {
 
 import { AppModule } from './app.module';
 
-import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -31,10 +30,7 @@ async function bootstrap() {
     configService.get<number>('GRPC_PORT') || 50054;
 
   // PROTO
-  const protoPath = join(
-    __dirname,
-    '../../proto/calificaciones.proto',
-  );
+  const protoPath = '/app/proto/calificaciones.proto';
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,

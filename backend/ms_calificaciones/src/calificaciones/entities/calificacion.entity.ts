@@ -2,8 +2,11 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
+  ManyToOne,
+  JoinColumn
 } from 'typeorm';
+
+import { Actividad } from './actividad.entity';
 
 @Entity('calificaciones')
 export class Calificacion {
@@ -18,20 +21,27 @@ export class Calificacion {
   materiaId: number;
 
   @Column()
-  docenteId: number;
+  actividadId: number;
 
-  @Column()
-  parcial: number;
-
-  @Column('decimal', {
-    precision: 4,
-    scale: 2,
+  @ManyToOne(
+    () => Actividad,
+    (actividad) => actividad.calificaciones
+  )
+  @JoinColumn({
+    name: 'actividadId'
   })
+  actividad: Actividad;
+
+  @Column('float')
   calificacion: number;
 
-  @Column()
-  periodoId: number;
+  @Column({
+    nullable: true
+  })
+  comentario: string;
 
-  @CreateDateColumn()
-  fechaRegistro: Date;
+  @Column({
+    default: 'ENTREGADO'
+  })
+  estado: string;
 }

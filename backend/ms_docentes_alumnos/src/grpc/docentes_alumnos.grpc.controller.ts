@@ -23,6 +23,7 @@ export class DocentesAlumnosGrpcController {
         id: alumno.matricula,
         nombre: alumno.nombre,
         matricula: alumno.matricula,
+        correo: alumno.correo,
       }));
 
       return {
